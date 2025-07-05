@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-
+ // note dùng để ghi chú nhân viên được thêm vào ngày nào và thuộc quản lý của ai
   note: {
     type: String,
     default: "",
@@ -63,12 +63,14 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 
+  // Người tạo tài khoản này (HR)
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     default: null,
   },
 
+  // Agent nằm dưới quyền quản lý của Manager nào
   managerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -112,14 +114,13 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-
-// ✅ Cập nhật thời gian mỗi khi lưu
+// 🔁 Tự cập nhật updatedAt mỗi khi save
 userSchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
 
-// ✅ Hash password trước khi lưu
+// 🔒 Hash password trước khi lưu nếu có thay đổi
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
@@ -132,7 +133,7 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// ✅ Method để kiểm tra mật khẩu khi login
+// ✅ So sánh password khi login
 userSchema.methods.comparePassword = async function (plainPassword) {
   return await bcrypt.compare(plainPassword, this.password);
 };

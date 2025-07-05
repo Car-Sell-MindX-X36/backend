@@ -1,3 +1,6 @@
-.env/
+# Ignore .env in any subfolder
+**/.env
+
+# Other common ignores
 node_modules/
 package-lock.json
