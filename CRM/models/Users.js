@@ -30,10 +30,12 @@ const userSchema = new mongoose.Schema({
   },
 
   employeeId: {
-    type: String,
-    required: true,
-    unique: true,
+  type: String,
+  unique: true,
+  required: function () {
+    return this.role === "manager" || this.role === "agent";
   },
+},
 
   gender: {
     type: String,

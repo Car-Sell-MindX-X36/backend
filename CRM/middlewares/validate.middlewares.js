@@ -1,4 +1,4 @@
-import { userRegisterSchema } from "../validations/userRegister.schema";
+import { userRegisterSchema } from "../validations/userRegister.schema.js";
 export const validateUserRegister = (req, res, next) => {
     const {error} = userRegisterSchema.validate(req.body, {abortEarly: false});
     if (error){

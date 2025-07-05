@@ -6,7 +6,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cron from "node-cron";
 import connectDB from "./configs/ConnectDB.js";
-
+import RegisterRouter from "./routes/Registers.routes.js";
 // Load .env
 dotenv.config();
 
@@ -22,6 +22,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("🚗 Car Buy/Sell/Rent CRM API is running...");
 });
+// Register routes
+app.use("/api/registers", RegisterRouter);
 
 // HTTP server (cần để dùng chung với socket.io)
 const server = http.createServer(app);
