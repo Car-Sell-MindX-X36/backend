@@ -8,6 +8,8 @@ import cron from "node-cron";
 import connectDB from "./configs/ConnectDB.js";
 import RegisterStaffsRouter from "./routes/RegistersStaffs.routes.js";
 import LoginStaffRouter from "./routes/LoginsStaffs.routes.js";
+import RegisterCustomersRouter from "./routes/RegisterCustomers.routes.js";
+import LoginCustomersRouter from "./routes/LoginCustomers.routes.js";
 
 // Load .env
 dotenv.config();
@@ -32,9 +34,15 @@ app.get("/", (req, res) => {
   res.send("🚗 Car Buy/Sell/Rent CRM API is running...");
 });
 
-// routes
+//admin routes
 app.use("/admin-registers", RegisterStaffsRouter);
 app.use("/admin-login", LoginStaffRouter);
+
+
+
+//customers routes
+app.use("/customer-registers", RegisterCustomersRouter);
+app.use("/customer-login", LoginCustomersRouter);
 
 // HTTP server (cần để dùng chung với socket.io)
 const server = http.createServer(app);

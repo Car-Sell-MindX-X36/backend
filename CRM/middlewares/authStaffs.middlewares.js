@@ -1,5 +1,6 @@
 import JWT from 'jsonwebtoken';
-import { Staff } from '../models/Staffs.js';
+import { Staff } from '../models/Staffs.js'; 
+
 
 // Middleware để xác thực token
 export const protect = async (req, res , next) => {
