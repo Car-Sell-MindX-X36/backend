@@ -6,7 +6,8 @@ import http from "http";
 import { Server } from "socket.io";
 import cron from "node-cron";
 import connectDB from "./configs/ConnectDB.js";
-import RegisterRouter from "./routes/Registers.routes.js";
+import RegisterStaffsRouter from "./routes/RegistersStaffs.routes.js";
+
 // Load .env
 dotenv.config();
 
@@ -15,15 +16,23 @@ connectDB();
 
 // Tạo Express app
 const app = express();
-app.use(cors());
+
+// CORS setup
+app.use(
+  cors({
+    origin: "https://frontend-cw79.onrender.com", // chỉ cho phép FE thật sự
+    credentials: true, // nếu dùng cookie/token thì cần dòng này
+  })
+);
 app.use(express.json());
 
 // Sample route
 app.get("/", (req, res) => {
   res.send("🚗 Car Buy/Sell/Rent CRM API is running...");
 });
+
 // Register routes
-app.use("/api/registers", RegisterRouter);
+app.use("/admin-registers", RegisterStaffsRouter);
 
 // HTTP server (cần để dùng chung với socket.io)
 const server = http.createServer(app);
@@ -31,7 +40,9 @@ const server = http.createServer(app);
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "https://frontend-cw79.onrender.com", // match với FE
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
