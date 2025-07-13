@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -11,7 +10,7 @@ import LoginStaffRouter from "./routes/LoginsStaffs.routes.js";
 import RegisterCustomersRouter from "./routes/RegisterCustomers.routes.js";
 import LoginCustomersRouter from "./routes/LoginCustomers.routes.js";
 
-// Load .env
+// Load biến môi trường
 dotenv.config();
 
 // Kết nối MongoDB
@@ -20,13 +19,18 @@ connectDB();
 // Tạo Express app
 const app = express();
 
+// ✅ Fix lỗi express-rate-limit khi deploy: tin proxy (Render, Vercel, Heroku,...)
+app.set("trust proxy", 1);
+
 // CORS setup
 app.use(
   cors({
-    origin: "https://frontend-cw79.onrender.com", // chỉ cho phép FE thật sự
-    credentials: true, // nếu dùng cookie/token thì cần dòng này
+    origin: "https://frontend-cw79.onrender.com", // domain FE thật sự
+    credentials: true,
   })
 );
+
+// Body parser
 app.use(express.json());
 
 // Sample route
@@ -34,33 +38,30 @@ app.get("/", (req, res) => {
   res.send("🚗 Car Buy/Sell/Rent CRM API is running...");
 });
 
-//admin routes
+// Admin routes
 app.use("/admin-registers", RegisterStaffsRouter);
 app.use("/admin-login", LoginStaffRouter);
 
-
-
-//customers routes
+// Customer routes
 app.use("/customer-registers", RegisterCustomersRouter);
 app.use("/customer-login", LoginCustomersRouter);
 
-// HTTP server (cần để dùng chung với socket.io)
+// Tạo server HTTP để dùng được với socket.io
 const server = http.createServer(app);
 
-// Socket.io setup
+// Socket.io cấu hình
 const io = new Server(server, {
   cors: {
-    origin: "https://frontend-cw79.onrender.com", // match với FE
+    origin: "https://frontend-cw79.onrender.com",
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-// Realtime logic
+// Logic realtime
 io.on("connection", (socket) => {
   console.log("🟢 New client connected:", socket.id);
 
-  // Example event
   socket.on("agent:newBooking", (data) => {
     console.log("📦 Booking received:", data);
     socket.broadcast.emit("admin:newBooking", data);
@@ -71,13 +72,13 @@ io.on("connection", (socket) => {
   });
 });
 
-// Batch job: chạy mỗi đêm lúc 0h00
+// Chạy batch job mỗi đêm
 cron.schedule("0 0 * * *", () => {
   console.log("📆 Running daily batch job...");
-  // TODO: logic tính doanh thu, cập nhật trạng thái thuê
+  // TODO: logic doanh thu, cập nhật trạng thái thuê
 });
 
-// Server start
+// Khởi động server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
