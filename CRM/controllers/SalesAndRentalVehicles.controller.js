@@ -1,4 +1,4 @@
-import {Vehicle} from '../models/Vehicle.js';
+import Vehicle from '../models/Vehicle.js';
 // Hàm api bán xe
 export const postSaleVehicle = async (req, res) => {
     try {
