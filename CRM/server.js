@@ -27,7 +27,7 @@ app.set("trust proxy", 1);
 app.use(
   cors({
     origin: ["https://frontend-cw79.onrender.com", // domain FE thật sự
-      "https://backup-fe.onrender.com/" // domain FE backup
+      "https://backup-fe.onrender.com" // domain FE backup
     ],
     credentials: true,
   })
