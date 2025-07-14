@@ -10,6 +10,7 @@ import LoginStaffRouter from "./routes/LoginsStaffs.routes.js";
 import RegisterCustomersRouter from "./routes/RegisterCustomers.routes.js";
 import LoginCustomersRouter from "./routes/LoginCustomers.routes.js";
 import VehiclesRouter from "./routes/Vehicles.routes.js";
+import SalesAndRentalRouter from "./routes/SalesAndRental.routes.js";
 // Load biến môi trường
 dotenv.config();
 
@@ -42,6 +43,8 @@ app.get("/", (req, res) => {
 app.use("/admin-registers", RegisterStaffsRouter);
 app.use("/admin-login", LoginStaffRouter);
 app.use("/admin-vehicles", VehiclesRouter);
+app.use("/admin/vehicles", SalesAndRentalRouter);
+
 
 // Customer routes
 app.use("/customer-registers", RegisterCustomersRouter);
