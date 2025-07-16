@@ -27,7 +27,9 @@ app.set("trust proxy", 1);
 app.use(
   cors({
     origin: ["https://frontend-cw79.onrender.com", // domain FE thật sự
-      "https://backup-fe.onrender.com" // domain FE backup
+      "https://backup-fe.onrender.com", // domain FE backup
+      "http://localhost:5173", // domain FE local
+      "http://localhost:5174" // domain FE local khác
     ],
     credentials: true,
   })
@@ -45,7 +47,7 @@ app.get("/", (req, res) => {
 app.use("/admin-registers", RegisterStaffsRouter);
 app.use("/admin-login", LoginStaffRouter);
 app.use("/admin-vehicles", VehiclesRouter);
-app.use("/admin/vehicles", SalesAndRentalRouter);
+app.use("/admin", SalesAndRentalRouter);
 
 
 // Customer routes
