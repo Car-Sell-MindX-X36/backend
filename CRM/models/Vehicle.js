@@ -7,10 +7,13 @@ const vehicleSchema = new mongoose.Schema({
     description: {
         type: String,
         trim: true,
+        minlength: 10,
+        maxlength: 5000
     },
     brand: {
-        type: String,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Brand',
+        required: true
     },
     model: {
         type: String,
@@ -24,7 +27,7 @@ const vehicleSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true,
-        min: 0,
+        min: 350000,
     },
     type: {
         type: String,
@@ -52,8 +55,21 @@ const vehicleSchema = new mongoose.Schema({
    },],
    status: {
     type: String,
-    enum: ['available', 'sold', 'rented'],
-    default: 'available',
+    enum: ['draft', 'available', 'sold', 'rented'],
+    default: 'draft',
+   },
+   condition: {
+       type: String,
+       enum: ['new', 'used'],
+       required: true,
+   },
+   used_percent: {
+       type: Number,
+       min: 60,
+       max: 100,
+       required: function(){
+              return this.condition === 'used';
+       },
    },
 },
 {

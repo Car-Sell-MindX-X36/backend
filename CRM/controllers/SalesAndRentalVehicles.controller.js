@@ -1,31 +1,22 @@
-import Vehicle from '../models/Vehicle.js';
-// Hàm api bán xe
-export const postSaleVehicle = async (req, res) => {
+import Vehicle from "../models/Vehicle.js";
+export const publishVehicle = async (req, res) => {
     try {
-        const newVehicle= new Vehicle({
-            ...req.body,
-            staff_id: req.staff._id,
-            type: 'sale',
-        });
-        const savedVehicle = await newVehicle.save();
-         res.status(201).json({ message: "🛒 Đăng bán xe thành công", vehicle: savedVehicle });
+        const { id } = req.params;
+        const vehicle = await Vehicle.findById(id);
+        if(!vehicle) {
+            return res.status(404).json({ message: "🚗 Xe không tồn tại" });
+        }
+        if(vehicle.status === 'sold'){
+            return res.status(400).json({ message: "🚗 Xe đã được bán, không thể đăng tải" });
+        }
+        if(vehicle.status === 'available'){
+            return res.status(400).json({ message: "🚗 Xe đã được đăng bán trước đó" });
+        }
+        vehicle.status = 'available';
+        const updatedVehicle = await vehicle.save();
+        res.status(200).json({ message: "🚗 Xe đã được đăng tải thành công", vehicle: updatedVehicle });
     } catch (error) {
-        console.error("🚨 Error posting sale vehicle:", error);
-        res.status(500).json({ message: "❌ Đăng bán xe thất bại", error: error.message });
+        console.error("🚨 Error publishing vehicle:", error);
+        res.status(500).json({ message: "❌ Đăng tải xe thất bại", error: error.message });
     }
-};
-// Hàm api cho thuê xe
-export const postRentalVehicle = async (req, res) => {
-    try {
-        const newVehicle = new Vehicle({
-            ...req.body,
-            staff_id: req.staff._id,
-            type: 'rental',
-        });
-        const savedVehicle = await newVehicle.save();
-        res.status(201).json({ message: "🚗 Đăng cho thuê xe thành công", vehicle: savedVehicle });
-    } catch (error) {
-        console.error("🚨 Error posting rental vehicle:", error);
-        res.status(500).json({ message: "❌ Đăng cho thuê xe thất bại", error: error.message });
-    }
-};
+}
