@@ -27,7 +27,7 @@ const vehicleSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true,
-        min: 350000,
+        min: 150000,
     },
     type: {
         type: String,

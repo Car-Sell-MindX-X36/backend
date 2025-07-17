@@ -1,10 +1,67 @@
 import Vehicle from "../models/Vehicle.js";
 import cloudinary from "../configs/Cloudinary.js";
-// Hàm api tạo xe mới
 // ✅ Hàm tạo xe kèm upload ảnh
 export const createVehicle = async (req, res) => {
   try {
-    // Upload từng ảnh lên Cloudinary
+    const {
+      title,
+      description,
+      brand,
+      model,
+      year,
+      price,
+      type,
+      condition,
+      used_percent,
+    } = req.body;
+
+    // Parse số từ form FE
+    const parsedPrice = Number(price);
+    const parsedYear = Number(year);
+    const parsedUsed = Number(used_percent);
+
+    // 1. Validate đầu vào cơ bản
+    if (!title || !description || description.length < 10) {
+      return res.status(400).json({ message: "📝 Vui lòng nhập tiêu đề và mô tả tối thiểu 10 ký tự" });
+    }
+
+    if (!brand || !model || !parsedYear || parsedYear < 1886) {
+      return res.status(400).json({ message: "📅 Năm sản xuất không hợp lệ (>= 1886)" });
+    }
+
+    if (!type || !['rental', 'sale'].includes(type)) {
+      return res.status(400).json({ message: "📦 Loại xe phải là 'rental' hoặc 'sale'" });
+    }
+
+    if (!parsedPrice || parsedPrice < 150000) {
+      return res.status(400).json({ message: "💰 Giá xe phải từ 150.000 trở lên" });
+    }
+
+    if (type === 'sale' && parsedPrice < 100000000) {
+      return res.status(400).json({ message: "💰 Xe bán phải có giá từ 100 triệu trở lên" });
+    }
+
+    if (type === 'rental' && parsedPrice < 150000) {
+      return res.status(400).json({ message: "💰 Giá thuê xe phải từ 150.000 trở lên" });
+    }
+
+    if (!condition || !['new', 'used'].includes(condition)) {
+      return res.status(400).json({ message: "🛠 Tình trạng xe phải là 'new' hoặc 'used'" });
+    }
+
+    if (condition === 'used') {
+      if (parsedUsed === undefined || parsedUsed < 60 || parsedUsed > 99) {
+        return res.status(400).json({
+          message: "⚠️ Xe cũ phải có phần trăm sử dụng từ 60% đến 99%",
+        });
+      }
+    }
+
+    // 2. Upload ảnh
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "🖼 Vui lòng thêm ít nhất 1 ảnh xe" });
+    }
+
     const uploadPromises = req.files.map((file) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -20,11 +77,20 @@ export const createVehicle = async (req, res) => {
 
     const imageUrls = await Promise.all(uploadPromises);
 
-    // Tạo xe với ảnh đã upload
+    // 3. Tạo xe
     const vehicle = new Vehicle({
-      ...req.body,
+      title,
+      description,
+      brand,
+      model,
+      year: parsedYear,
+      price: parsedPrice,
+      type,
+      condition,
+      used_percent: condition === 'used' ? parsedUsed : undefined,
       images: imageUrls,
       staff_id: req.staff._id,
+      status: 'draft',
     });
 
     const savedVehicle = await vehicle.save();
@@ -34,23 +100,50 @@ export const createVehicle = async (req, res) => {
       vehicle: savedVehicle,
     });
   } catch (error) {
-    console.error("Error creating vehicle: ", error);
+    console.error("❌ Error creating vehicle: ", error);
     res.status(500).json({
       message: "🚗 Đã có lỗi xảy ra khi thêm xe mới",
       error: error.message,
     });
   }
 };
+
 // Hàm api lấy danh sách xe
 export const getAllVehicles = async (req, res) => {
-    try {
-        const vehicles = await Vehicle.find().populate('staff_id buyer_id renter_id');
-        res.status(200).json({ message: "🚗 Tổng danh sách xe", vehicles });
-    } catch (error) {
-        console.error("Error fetching vehicles: ", error);
-        res.status(500).json({ message: "🚗 Đã có lỗi xảy ra khi lấy tổng danh sách xe" });
-    }
+  try {
+    // 1. Lấy query phân trang
+    const page = parseInt(req.query.page) || 1; // Mặc định page 1
+    const limit = 10; // Giới hạn mỗi trang 10 xe
+    const skip = (page - 1) * limit;
+
+    // 2. Đếm tổng số xe
+    const totalVehicles = await Vehicle.countDocuments();
+
+    // 3. Tìm xe với phân trang, sort mới nhất
+    const vehicles = await Vehicle.find()
+      .populate('staff_id buyer_id renter_id')
+      .sort({ createdAt: -1 }) // Mới nhất trước
+      .skip(skip)
+      .limit(limit);
+
+    // 4. Trả kết quả
+    res.status(200).json({
+      message: "🚗 Danh sách xe theo trang",
+      currentPage: page,
+      totalPages: Math.ceil(totalVehicles / limit),
+      totalVehicles,
+      vehicles,
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching vehicles: ", error);
+    res.status(500).json({
+      message: "🚗 Đã có lỗi xảy ra khi lấy danh sách xe",
+      error: error.message,
+    });
+  }
 };
+
 // Hàm api lấy xe theo ID
 export const getVehicleById = async (req, res) => {
     try {
