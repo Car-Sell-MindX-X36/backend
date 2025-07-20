@@ -54,6 +54,7 @@ if (vehicle.staff_id.toString() !== req.staff._id.toString()) {
 
     // 8. Cập nhật trạng thái thành 'available'
     vehicle.status = 'available';
+    vehicle.publish_at = new Date();
     const updatedVehicle = await vehicle.save();
 
     return res.status(200).json({

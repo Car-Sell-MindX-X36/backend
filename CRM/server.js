@@ -11,6 +11,7 @@ import RegisterCustomersRouter from "./routes/RegisterCustomers.routes.js";
 import LoginCustomersRouter from "./routes/LoginCustomers.routes.js";
 import VehiclesRouter from "./routes/Vehicles.routes.js";
 import SalesAndRentalRouter from "./routes/SalesAndRental.routes.js";
+import cloudinary from "./configs/Cloudinary.js";
 // Load biến môi trường
 dotenv.config();
 

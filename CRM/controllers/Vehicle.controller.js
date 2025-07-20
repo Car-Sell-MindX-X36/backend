@@ -1,5 +1,7 @@
 import Vehicle from "../models/Vehicle.js";
+import Brand from "../models/Brand.js";
 import cloudinary from "../configs/Cloudinary.js";
+
 // ✅ Hàm tạo xe kèm upload ảnh
 export const createVehicle = async (req, res) => {
   try {
@@ -15,12 +17,10 @@ export const createVehicle = async (req, res) => {
       used_percent,
     } = req.body;
 
-    // Parse số từ form FE
     const parsedPrice = Number(price);
     const parsedYear = Number(year);
     const parsedUsed = Number(used_percent);
 
-    // 1. Validate đầu vào cơ bản
     if (!title || !description || description.length < 10) {
       return res.status(400).json({ message: "📝 Vui lòng nhập tiêu đề và mô tả tối thiểu 10 ký tự" });
     }
@@ -28,6 +28,12 @@ export const createVehicle = async (req, res) => {
     if (!brand || !model || !parsedYear || parsedYear < 1886) {
       return res.status(400).json({ message: "📅 Năm sản xuất không hợp lệ (>= 1886)" });
     }
+
+    const brandExists = await Brand.findById(brand);
+    if (!brandExists) {
+      return res.status(404).json({ message: "🚫 Hãng xe không tồn tại" });
+    }
+
 
     if (!type || !['rental', 'sale'].includes(type)) {
       return res.status(400).json({ message: "📦 Loại xe phải là 'rental' hoặc 'sale'" });
@@ -57,7 +63,6 @@ export const createVehicle = async (req, res) => {
       }
     }
 
-    // 2. Upload ảnh
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "🖼 Vui lòng thêm ít nhất 1 ảnh xe" });
     }
@@ -68,16 +73,15 @@ export const createVehicle = async (req, res) => {
           { folder: "vehicles" },
           (error, result) => {
             if (error) return reject(error);
-            resolve(result.secure_url);
+            resolve({ url: result.secure_url, public_id: result.public_id });
           }
         );
         stream.end(file.buffer);
       });
     });
 
-    const imageUrls = await Promise.all(uploadPromises);
+    const imageResults = await Promise.all(uploadPromises);
 
-    // 3. Tạo xe
     const vehicle = new Vehicle({
       title,
       description,
@@ -88,7 +92,7 @@ export const createVehicle = async (req, res) => {
       type,
       condition,
       used_percent: condition === 'used' ? parsedUsed : undefined,
-      images: imageUrls,
+      images: imageResults,
       staff_id: req.staff._id,
       status: 'draft',
     });
@@ -107,6 +111,7 @@ export const createVehicle = async (req, res) => {
     });
   }
 };
+
 
 // Hàm api lấy danh sách xe
 export const getAllVehicles = async (req, res) => {
@@ -165,6 +170,11 @@ export const updateVehicle = async (req, res) => {
       return res.status(404).json({ message: "Xe không tồn tại" });
     }
 
+    // ✅ Kiểm tra quyền sở hữu
+    if (vehicle.staff_id.toString() !== req.staff._id.toString()) {
+      return res.status(403).json({ message: "🚫 Bạn không có quyền sửa xe này" });
+    }
+
     // ✅ 1. Xoá ảnh cũ nếu có yêu cầu
     const { imagesToRemove } = req.body;
     if (imagesToRemove && imagesToRemove.length > 0) {
@@ -198,7 +208,7 @@ export const updateVehicle = async (req, res) => {
       vehicle.images.push(...uploadedImages);
     }
 
-    // ✅ 3. Cập nhật các field khác
+    // ✅ 3. Cập nhật các field khác (ngoại trừ ảnh xoá)
     Object.keys(req.body).forEach((key) => {
       if (!['imagesToRemove'].includes(key)) {
         vehicle[key] = req.body[key];
@@ -219,6 +229,11 @@ export const deleteVehicle = async (req, res) => {
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
       return res.status(404).json({ message: "🚗 Không tìm thấy xe để xóa" });
+    }
+
+    // ✅ Kiểm tra quyền sở hữu
+    if (vehicle.staff_id.toString() !== req.staff._id.toString()) {
+      return res.status(403).json({ message: "🚫 Bạn không có quyền xoá xe này" });
     }
 
     // ✅ Xoá từng ảnh trên Cloudinary (nếu có public_id)

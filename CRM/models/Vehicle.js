@@ -49,10 +49,10 @@ const vehicleSchema = new mongoose.Schema({
     ref: 'Customer',
     default: null,
    },
-   images: [{
-    type: String,
-    required: true,
-   },],
+  images: [{
+  url: { type: String, required: true },
+  public_id: { type: String, required: true },
+}],
    status: {
     type: String,
     enum: ['draft', 'available', 'sold', 'rented'],
@@ -71,6 +71,10 @@ const vehicleSchema = new mongoose.Schema({
               return this.condition === 'used';
        },
    },
+   publish_at: {
+  type: Date,
+  default: null,
+},
 },
 {
     timestamps: true,
