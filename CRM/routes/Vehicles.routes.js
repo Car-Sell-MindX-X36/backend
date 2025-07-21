@@ -50,6 +50,7 @@ VehicleRouter.patch(
 
 // ❌ agent và manager đều có thể xóa xe
 VehicleRouter.delete('/:id', protect, checkRole(['manager', 'agent']), deleteVehicle);
-VehicleRouter.get('/brands/all' , protect, checkRole(['agent', 'manager']), getAllBrands);
+// 🚗 Lấy tất cả thương hiệu xe
+VehicleRouter.get('/brands/all', protect, checkRole(['agent', 'manager']), getAllBrands);
 
 export default VehicleRouter;

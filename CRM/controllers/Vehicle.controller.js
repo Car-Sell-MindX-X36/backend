@@ -275,3 +275,38 @@ export const getAllBrands = async (req, res) => {
     });
   }
 };
+// Hàm api xóa xe
+export const deleteVehicle = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Kiểm tra xe có tồn tại không
+    const vehicle = await Vehicle.findById(id);
+    if (!vehicle) {
+      return res.status(404).json({ message: "🚫 Xe không tồn tại" });
+    }
+
+    // 2. Xoá ảnh xe từ Cloudinary
+    if (Array.isArray(vehicle.images)) {
+      const deletePromises = vehicle.images.map(async (imageUrl) => {
+        // Tách public_id từ URL
+        const publicIdMatch = imageUrl.match(/\/([^/]+)\.(jpg|jpeg|png|webp|gif)$/i);
+        if (publicIdMatch) {
+          const publicId = publicIdMatch[1]; // ví dụ: "car_xyz123"
+          await cloudinary.uploader.destroy(`car_rent/${publicId}`);
+        }
+      });
+
+      await Promise.all(deletePromises);
+    }
+
+    // 3. Xoá xe trong MongoDB
+    await Vehicle.findByIdAndDelete(id);
+
+    return res.status(200).json({ message: "✅ Đã xoá xe thành công" });
+  } catch (error) {
+    console.error("❌ Lỗi khi xoá xe:", error);
+    return res.status(500).json({ message: "❌ Lỗi server khi xoá xe" });
+  }
+};
+
