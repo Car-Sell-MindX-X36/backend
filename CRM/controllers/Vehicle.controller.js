@@ -116,22 +116,23 @@ export const createVehicle = async (req, res) => {
 // Hàm api lấy danh sách xe
 export const getAllVehicles = async (req, res) => {
   try {
-    // 1. Lấy query phân trang
-    const page = parseInt(req.query.page) || 1; // Mặc định page 1
-    const limit = 10; // Giới hạn mỗi trang 10 xe
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
     const skip = (page - 1) * limit;
 
-    // 2. Đếm tổng số xe
     const totalVehicles = await Vehicle.countDocuments();
 
-    // 3. Tìm xe với phân trang, sort mới nhất
     const vehicles = await Vehicle.find()
-      .populate('staff_id buyer_id renter_id')
-      .sort({ createdAt: -1 }) // Mới nhất trước
+      .populate([
+        { path: 'staff_id' },
+        { path: 'buyer_id' },
+        { path: 'renter_id' },
+        { path: 'brand', select: 'name' } // ✅ populate tên hãng
+      ])
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    // 4. Trả kết quả
     res.status(200).json({
       message: "🚗 Danh sách xe theo trang",
       currentPage: page,
@@ -253,5 +254,21 @@ export const deleteVehicle = async (req, res) => {
   } catch (error) {
     console.error("❌ Lỗi xóa xe:", error);
     res.status(500).json({ message: "❌ Xảy ra lỗi khi xóa xe", error: error.message });
+  }
+};
+// Lấy toàn bộ hãng xe để đổ vào dropdown form tạo xe
+export const getAllBrands = async (req, res) => {
+  try {
+    const brands = await Brand.find().select('name') // chỉ lấy field 'name'
+    res.status(200).json({
+      message: "✅ Danh sách hãng xe",
+      brands,
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy danh sách brand:", error)
+    res.status(500).json({
+      message: "❌ Lỗi khi lấy danh sách hãng xe",
+      error: error.message,
+    });
   }
 };

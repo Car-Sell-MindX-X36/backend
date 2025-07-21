@@ -71,10 +71,6 @@ const vehicleSchema = new mongoose.Schema({
               return this.condition === 'used';
        },
    },
-   publish_at: {
-  type: Date,
-  default: null,
-},
 },
 {
     timestamps: true,

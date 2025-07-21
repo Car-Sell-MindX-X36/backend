@@ -5,7 +5,8 @@ import {
   getAllVehicles,
   getVehicleById,
   updateVehicle,
-  deleteVehicle
+  deleteVehicle,
+  getAllBrands
 } from '../controllers/Vehicle.controller.js';
 import { protect, checkRole } from '../middlewares/authStaffs.middlewares.js';
 import rateLimit from 'express-rate-limit';
@@ -49,5 +50,6 @@ VehicleRouter.patch(
 
 // ❌ agent và manager đều có thể xóa xe
 VehicleRouter.delete('/:id', protect, checkRole(['manager', 'agent']), deleteVehicle);
+VehicleRouter.get('/brands/all' , protect, checkRole(['agent', 'manager']), getAllBrands);
 
 export default VehicleRouter;
