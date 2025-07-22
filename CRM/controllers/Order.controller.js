@@ -1,7 +1,7 @@
 import Order from '../models/Order.js';
 import Vehicle from '../models/Vehicle.js';
-import Customer from '../models/Customers.js';
-import Staff from '../models/Staffs.js';
+import {Customer} from '../models/Customers.js';
+import {Staff} from '../models/Staffs.js';
 
 export const createOrder = async (req, res) => {
   try {
