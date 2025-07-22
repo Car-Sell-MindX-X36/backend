@@ -113,21 +113,35 @@ export const createVehicle = async (req, res) => {
 };
 
 
-// Hàm api lấy danh sách xe
 export const getAllVehicles = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    const totalVehicles = await Vehicle.countDocuments();
+    // ✅ Bổ sung filter dựa vào query
+   const allowedTypes = ['rental', 'sale'];
+const allowedStatuses = ['draft', 'available', 'sold', 'rented'];
 
-    const vehicles = await Vehicle.find()
+const filter = {};
+
+if (req.query.type && allowedTypes.includes(req.query.type)) {
+  filter.type = req.query.type;
+}
+
+if (req.query.status && allowedStatuses.includes(req.query.status)) {
+  filter.status = req.query.status;
+}
+
+const totalVehicles = await Vehicle.countDocuments(filter);
+
+
+    const vehicles = await Vehicle.find(filter)
       .populate([
         { path: 'staff_id' },
         { path: 'buyer_id' },
         { path: 'renter_id' },
-        { path: 'brand', select: 'name' } // ✅ populate tên hãng
+        { path: 'brand', select: 'name' }
       ])
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -149,6 +163,7 @@ export const getAllVehicles = async (req, res) => {
     });
   }
 };
+
 
 // Hàm api lấy xe theo ID
 export const getVehicleById = async (req, res) => {

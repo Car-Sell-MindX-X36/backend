@@ -12,6 +12,7 @@ import LoginCustomersRouter from "./routes/LoginCustomers.routes.js";
 import VehiclesRouter from "./routes/Vehicles.routes.js";
 import SalesAndRentalRouter from "./routes/SalesAndRental.routes.js";
 import cloudinary from "./configs/Cloudinary.js";
+import OrdersRouter from "./routes/Orders.routes.js";
 // Load biến môi trường
 dotenv.config();
 
@@ -54,6 +55,7 @@ app.use("/admin", SalesAndRentalRouter);
 // Customer routes
 app.use("/customer-registers", RegisterCustomersRouter);
 app.use("/customer-login", LoginCustomersRouter);
+app.use("/customer/orders", OrdersRouter);
 
 // Tạo server HTTP để dùng được với socket.io
 const server = http.createServer(app);
