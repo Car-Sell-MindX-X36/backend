@@ -55,7 +55,7 @@ app.use("/admin", SalesAndRentalRouter);
 // Customer routes
 app.use("/customer-registers", RegisterCustomersRouter);
 app.use("/customer-login", LoginCustomersRouter);
-app.use("/customer/orders", OrdersRouter);
+app.use("/customer", OrdersRouter);
 
 // Tạo server HTTP để dùng được với socket.io
 const server = http.createServer(app);

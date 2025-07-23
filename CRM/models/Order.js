@@ -6,22 +6,23 @@ const orderSchema = new mongoose.Schema({
         required: true,
     },
     vehicles: [
-    {
-        vehicleId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Vehicle',
-          required: true,
-        },
-        price: {
-          type: Number,
-          required: true,
-        },
-        rentalPeriod: {
-          startDate: { type: Date },
-          endDate: { type: Date },
-        },
-      },
-    ],
+  {
+    vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle', required: true },
+    price: { type: Number, required: true },
+    rentalPeriod: {
+      startDate: { type: Date },
+      endDate: { type: Date },
+    },
+    buyer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+    vehicleSnapshot: {
+      name: String,
+      brand: String,
+      year: Number,
+      image: String,
+    }
+  }
+],
+
     orderType: {
         type: String,
         enum: ['rental' , 'buy'],
